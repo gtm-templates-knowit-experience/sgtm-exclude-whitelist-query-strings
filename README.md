@@ -37,12 +37,12 @@ Add the parameters to the table that you want to Whitelist/Exclude.
 
 ## Example Setups
 ### Example Setup for Google Analytics 4 (GA4)
-In the GA4 example setup below, 1 extra GA4 parameter has been created (page_query_string):
+In the GA4 example setup below, 1 extra GA4 parameter has been created (page_query_string). Settings below:
 
-1. **page_location** with Parameters Whitelisted and Removed.
-2. Query String without Question Mark, Whitelisted and Redacted is sent to parameter **page_query_string**.
+1. **page_location** with Page URL Parameters Whitelisted and other Parameters Removed.
+2. Query String without Question Mark, Whitelisted and other Parameters Redacted is sent to parameter **page_query_string**.
 
-We overwrite **page_location** with the new URL where parameters are Whitelisted and removed. To **page_query_string** we send the Query String with the Whitelisted Parameters as Redacted.
+We overwrite **page_location** with the new URL where Parameters are Whitelisted and other Parameters removed. To **page_query_string** we send the Query String with the Whitelisted Parameters other Parameters as Redacted.
 
 ![Google Analytics 4 (GA4) example setup](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/ga4-overwriting-example.png)
 
@@ -58,9 +58,9 @@ In the Universal Analytics example setup below, 3 different variables have been 
 2. Query String without Question Mark, Whitelisted and Redacted
 3. Referral with Parameters Whitelisted and Removed
 
-We overwrite **page_location** with the new URL where parameters are Whitelisted and removed. 
-To **Custom Dimension 1 (cd1)** we send the Query String with the Whitelisted Parameters as Redacted.
-We overwrite **page_referral** with the new Referral where parameters are Whitelisted and removed.
+We overwrite **page_location** with the new URL where parameters are Whitelisted and other Parameters removed. 
+To **Custom Dimension 1 (cd1)** we send the Query String with the Whitelisted Parameters and other Parameters as Redacted.
+We overwrite **page_referral** with the new Referral where parameters are Whitelisted and other Parameters removed.
 
 Using this setup we get "clean" URLs and referrals, while we at the same time can investigate what other parameters are in use.
 
