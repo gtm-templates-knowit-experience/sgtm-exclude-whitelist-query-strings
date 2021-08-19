@@ -23,7 +23,7 @@ Parameter matching is by default **Case Sensitive**. By ticking this box, all in
 ### Whitelist or Exclude Query Parameters
 You can either **Whitelist** or **Exclude** Parameters.
 
-**Whitelist** means only parameters listed are allowed to pass through. This is the safest option for not allowing PII parameters leaking into your analytics tool(s). If you choose this option, it's important that you **add all parameters that you need**. That can be campaign tracking parameters and internal search parameters.
+**Whitelist** means only parameters listed are allowed to pass through. This is the safest option for not allowing PII parameters leaking into your analytics and marketing tools. If you choose this option, it's important that you **add all parameters that you need**. That can be campaign tracking parameters and internal search parameters.
 
 **Exclude** can also be used as a method for blocking PII parameters. It's less "safe" than using **Whitelist**, but are added as an option. With this method, add parameters you **don't want to be passed through** to your analytics tool.
 
