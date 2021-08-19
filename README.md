@@ -35,9 +35,9 @@ Example: **query=[REDACTED]**.
 ### Add Query Parameters for Whitelisting/Exclusion
 Add the parameters to the table that you want to Whitelist/Exclude.
 
-## Example setups for Universal Analytics
-### Example setup for Google Analytics 4 (GA4)
-In the GA4 example setup below, 1 extra parameter has been created:
+## Example Setups
+### Example Setup for Google Analytics 4 (GA4)
+In the GA4 example setup below, 1 extra GA4 parameter has been created (page_query_string):
 
 1. **page_location** with Parameters Whitelisted and Removed.
 2. Query String without Question Mark, Whitelisted and Redacted is sent to parameter **page_query_string**.
@@ -47,12 +47,12 @@ We overwrite **page_location** with the new URL where parameters are Whitelisted
 ![Google Analytics 4 (GA4) example setup](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/ga4-overwriting-example.png)
 
 #### Example Output
-| Setting | Allowed parameters | page_location input | page_location output |
+| Settings | Allowed parameters | page_location input | page_location output |
 | -------------| -------------| ------------- | ------------- |
 | Page URL with Parameters (removed) | query | ht<span>tps://domain</span>.com/path?query=something&secondparam=something-else | ht<span>tps://domain</span>.com/path?query=something  |
 | Parameters without Question Mark (redacted) | query | ht<span>tps://domain</span>.com/path?query=something&secondparam=something-else | query=something&secondparam=[REDACTED] |
 
-### Example setup for Universal Analytics
+### Example Setup for Universal Analytics
 In the Universal Analytics example setup below, 3 different variables have been created:
 1. Page URL with Parameters Whitelisted and Removed
 2. Query String without Question Mark, Whitelisted and Redacted
