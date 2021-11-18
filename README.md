@@ -4,6 +4,8 @@ This **Variable Template** for **Google Tag Manager Server-Side (SGTM)** fixes t
 
 Images of the Template is at the bottom.
 
+This Template is available in the [**Google Tag Manager Template Gallery**](https://tagmanager.google.com/gallery/#/owners/gtm-templates-knowit-experience/templates/sgtm-exclude-whitelist-query-strings).
+
 ## Variable Settings
 ### Page URL
 As standard **page_location** is chosen, but you can use any Variable containing a valid URL as input.
