@@ -1,6 +1,9 @@
 homepage: "https://github.com/gtm-templates-knowit-experience/"
 documentation: "https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings"
 versions:
-  # Latest version
+  # Added support for returning "Page URL without Parameters" (e.g. https://domain.com/path). Bug fix of question mark returned.
+  - sha: 47193d6f9b1025251d9eae933fd53297270edadc
+    changeNotes: Initial release.
+  # Older versions
   - sha: 42fa3fa0bd6596f05a5ab9b7c68355f0eed13711
     changeNotes: Initial release.
