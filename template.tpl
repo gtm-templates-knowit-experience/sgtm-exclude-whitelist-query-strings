@@ -15,7 +15,11 @@ ___INFO___
   "securityGroups": [],
   "displayName": "Exclude or Whitelist Query String Parameters",
   "description": "Exclude or Whitelist Query String Parameters from page_location or any Variable with a valid URL-parameter. Parameters can be Removed or Redacted. Output can be with or without URL/Path.",
-"categories": ["UTILITY","TAG_MANAGEMENT","ANALYTICS"],
+  "categories": [
+    "UTILITY",
+    "TAG_MANAGEMENT",
+    "ANALYTICS"
+  ],
   "containerContexts": [
     "SERVER"
   ]
@@ -51,7 +55,6 @@ ___TEMPLATE_PARAMETERS___
         "type": "SELECT",
         "name": "outputResult",
         "displayName": "Parameter Output Result",
-        "macrosInSelect": false,
         "selectItems": [
           {
             "value": "url",
@@ -68,12 +71,16 @@ ___TEMPLATE_PARAMETERS___
           {
             "value": "param",
             "displayValue": "Parameters without Question Mark"
+          },
+          {
+            "value": "urlwoq",
+            "displayValue": "Page URL without Parameters"
           }
         ],
         "simpleValueType": true,
         "defaultValue": "url",
-        "help": "Output Result can be \u003cb\u003ePage URL with Parameters\u003c/b\u003e (https://domain.com/path?query\u003dsomething), \u003cb\u003ePage Path with Query\u003c/b\u003e (/path?query\u003dsomething), \u003cb\u003eParameters with Question Mark\u003c/b\u003e (?query\u003dsomething) or \u003cb\u003eParameters without Question Mark\u003c/b\u003e (query\u003dsomething).",
-        "alwaysInSummary": false
+        "help": "Output Result can be:\u003cbr/\u003e\n \u003cb\u003ePage URL with Parameters\u003c/b\u003e (https://domain.com/path?query\u003dsomething).\n\u003cbr /\u003e \u003cb\u003ePage Path with Query\u003c/b\u003e (/path?query\u003dsomething).\n \u003cbr /\u003e\u003cb\u003eParameters with Question Mark\u003c/b\u003e (?query\u003dsomething). \n\u003cbr /\u003e\u003cb\u003eParameters without Question Mark\u003c/b\u003e (query\u003dsomething).\n\u003cbr /\u003e \u003cb\u003ePage URL without Parameters\u003c/b\u003e (https://domain.com/path).",
+        "alwaysInSummary": true
       },
       {
         "type": "CHECKBOX",
@@ -81,97 +88,117 @@ ___TEMPLATE_PARAMETERS___
         "checkboxText": "Lowercase Parameters",
         "simpleValueType": true,
         "help": "Parameter matching is by default \u003cb\u003eCase Sensitive\u003c/b\u003e. By ticking this box, all incoming parameters will be \u003cb\u003elowercased\u003c/b\u003e.",
-        "alwaysInSummary": true
-      }
-    ]
-  },
-  {
-    "type": "RADIO",
-    "name": "paramInputChoice",
-    "displayName": "Whitelist or Exclude Query Parameters",
-    "radioItems": [
-      {
-        "value": "paramWhitelist",
-        "displayValue": "Whitelist Parameters"
-      },
-      {
-        "value": "paramExclude",
-        "displayValue": "Exclude Parameters"
-      }
-    ],
-    "simpleValueType": true,
-    "defaultValue": "paramWhitelist",
-    "help": "Choose if the Parameters you add should be \u003cb\u003eWhitelisted\u003c/b\u003e (included) or \u003cb\u003eExcluded\u003c/b\u003e."
-  },
-  {
-    "type": "SELECT",
-    "name": "removeRedactChoice",
-    "displayName": "Remove or Redact Parameter Value",
-    "macrosInSelect": false,
-    "selectItems": [
-      {
-        "value": "paramRedact",
-        "displayValue": "Redact"
-      },
-      {
-        "value": "paramRemove",
-        "displayValue": "Remove"
-      }
-    ],
-    "simpleValueType": true,
-    "subParams": [
-      {
-        "type": "TEXT",
-        "name": "paramRedactText",
-        "displayName": "Redact Replacement Text",
-        "simpleValueType": true,
+        "alwaysInSummary": true,
         "enablingConditions": [
           {
-            "paramName": "removeRedactChoice",
-            "paramValue": "paramRedact",
-            "type": "EQUALS"
+            "paramName": "outputResult",
+            "paramValue": "urlwoq",
+            "type": "NOT_EQUALS"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "groupChoice",
+    "groupStyle": "NO_ZIPPY",
+    "subParams": [
+      {
+        "type": "RADIO",
+        "name": "paramInputChoice",
+        "displayName": "Whitelist or Exclude Query Parameters",
+        "radioItems": [
+          {
+            "value": "paramWhitelist",
+            "displayValue": "Whitelist Parameters"
+          },
+          {
+            "value": "paramExclude",
+            "displayValue": "Exclude Parameters"
           }
         ],
-        "defaultValue": "[REDACTED]",
-        "help": "Select which text to use to \u003cstrong\u003ereplace\u003c/strong\u003e the redacted parameter \u003cstrong\u003evalue\u003c/strong\u003e. As standard \u003cstrong\u003e[REDACTED]\u003c/strong\u003e is used."
-      }
-    ],
-    "help": "Choose if Parameters should be \u003cb\u003eRemoved\u003c/b\u003e, or if the Parameter value should be \u003cb\u003eRedacted\u003c/b\u003e."
-  },
-  {
-    "type": "LABEL",
-    "name": "excludeInfo",
-    "displayName": "Add \u003cb\u003eQuery Parameters\u003c/b\u003e for \u003cb\u003eExclusion\u003c/b\u003e",
-    "enablingConditions": [
+        "simpleValueType": true,
+        "defaultValue": "paramWhitelist",
+        "help": "Choose if the Parameters you add should be \u003cb\u003eWhitelisted\u003c/b\u003e (included) or \u003cb\u003eExcluded\u003c/b\u003e."
+      },
       {
-        "paramName": "paramInputChoice",
-        "paramValue": "paramExclude",
-        "type": "EQUALS"
-      }
-    ]
-  },
-  {
-    "type": "LABEL",
-    "name": "whitelistInfo",
-    "displayName": "Add \u003cb\u003eQuery Parameters\u003c/b\u003e for \u003cb\u003eWhitelisting\u003c/b\u003e",
-    "enablingConditions": [
+        "type": "SELECT",
+        "name": "removeRedactChoice",
+        "displayName": "Remove or Redact Parameter Value",
+        "macrosInSelect": false,
+        "selectItems": [
+          {
+            "value": "paramRedact",
+            "displayValue": "Redact"
+          },
+          {
+            "value": "paramRemove",
+            "displayValue": "Remove"
+          }
+        ],
+        "simpleValueType": true,
+        "subParams": [
+          {
+            "type": "TEXT",
+            "name": "paramRedactText",
+            "displayName": "Redact Replacement Text",
+            "simpleValueType": true,
+            "enablingConditions": [
+              {
+                "paramName": "removeRedactChoice",
+                "paramValue": "paramRedact",
+                "type": "EQUALS"
+              }
+            ],
+            "defaultValue": "[REDACTED]",
+            "help": "Select which text to use to \u003cstrong\u003ereplace\u003c/strong\u003e the redacted parameter \u003cstrong\u003evalue\u003c/strong\u003e. As standard \u003cstrong\u003e[REDACTED]\u003c/strong\u003e is used."
+          }
+        ],
+        "help": "Choose if Parameters should be \u003cb\u003eRemoved\u003c/b\u003e, or if the Parameter value should be \u003cb\u003eRedacted\u003c/b\u003e."
+      },
       {
-        "paramName": "paramInputChoice",
-        "paramValue": "paramWhitelist",
-        "type": "EQUALS"
-      }
-    ]
-  },
-  {
-    "type": "SIMPLE_TABLE",
-    "name": "queryParamTable",
-    "displayName": "",
-    "simpleTableColumns": [
+        "type": "LABEL",
+        "name": "excludeInfo",
+        "displayName": "Add \u003cb\u003eQuery Parameters\u003c/b\u003e for \u003cb\u003eExclusion\u003c/b\u003e",
+        "enablingConditions": [
+          {
+            "paramName": "paramInputChoice",
+            "paramValue": "paramExclude",
+            "type": "EQUALS"
+          }
+        ]
+      },
       {
-        "defaultValue": "",
+        "type": "LABEL",
+        "name": "whitelistInfo",
+        "displayName": "Add \u003cb\u003eQuery Parameters\u003c/b\u003e for \u003cb\u003eWhitelisting\u003c/b\u003e",
+        "enablingConditions": [
+          {
+            "paramName": "paramInputChoice",
+            "paramValue": "paramWhitelist",
+            "type": "EQUALS"
+          }
+        ]
+      },
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "queryParamTable",
         "displayName": "",
-        "name": "queryParam",
-        "type": "TEXT",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "",
+            "name": "queryParam",
+            "type": "TEXT",
+            "valueValidators": [
+              {
+                "type": "NON_EMPTY"
+              }
+            ]
+          }
+        ],
+        "newRowButtonText": "Add Parameter",
         "valueValidators": [
           {
             "type": "NON_EMPTY"
@@ -179,10 +206,11 @@ ___TEMPLATE_PARAMETERS___
         ]
       }
     ],
-    "newRowButtonText": "Add Parameter",
-    "valueValidators": [
+    "enablingConditions": [
       {
-        "type": "NON_EMPTY"
+        "paramName": "outputResult",
+        "paramValue": "urlwoq",
+        "type": "NOT_EQUALS"
       }
     ]
   }
@@ -197,7 +225,10 @@ const parseUrl = require('parseUrl');
 
 let urlInput = parseUrl(data.urlInput === 'urlInputDefault' ? getEventData('page_location') : data.urlInput);
 if(urlInput) {
-	const fullURL = decodeUri(urlInput.href);
+  const fullURL = decodeUri(urlInput.href);
+  if(data.outputResult === 'urlwoq') {
+    return fullURL.split("?")[0];
+  } else {
 	let urlSplit = fullURL.split("?");
 	let questionMark = '';
 	let queryStringNew = [];
@@ -208,9 +239,8 @@ if(urlInput) {
 			queryURL = queryURL.toLowerCase();
 		}
 		queryURL = queryURL.split("&");
-		questionMark = '?';
 		
-		let paramQuery = data.queryParamTable.map(x => x.queryParam);
+		const paramQuery = data.queryParamTable.map(x => x.queryParam);
 		for(var query of queryURL){
 			if(data.paramInputChoice === "paramWhitelist"){
 				if(paramQuery.indexOf(query.split("=")[0]) > -1){
@@ -229,6 +259,9 @@ if(urlInput) {
 			}
 		}
 	}
+    if (queryStringNew != '') {
+      questionMark = '?';
+    }
 	switch (data.outputResult) {
 		case 'url':
 			return urlSplit[0]+questionMark+queryStringNew.join('&');
@@ -239,6 +272,7 @@ if(urlInput) {
 		case 'param':
 			return queryStringNew.join('&');
 	}
+  }
 }
 
 
