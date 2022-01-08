@@ -15,6 +15,7 @@ As standard **page_location** is chosen, but you can use any Variable containing
 | Setting  | Example Output |
 | ------------- | ------------- |
 | Page URL with Parameters | ht<span>tps://domain</span>.com/path?query=something  |
+| Page URL without Parameters | ht<span>tps://domain</span>.com/path  |
 | Page Path with Parameters  | /path?query=something  |
 | Parameters with Question Mark  | ?query=something  |
 | Parameters without Question Mark  | query=something  |
