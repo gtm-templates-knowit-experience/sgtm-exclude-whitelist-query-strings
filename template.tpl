@@ -1,4 +1,4 @@
-﻿___TERMS_OF_SERVICE___
+___TERMS_OF_SERVICE___
 
 By creating or modifying this file you agree to Google Tag Manager's Community
 Template Gallery Developer Terms of Service available at
@@ -230,15 +230,11 @@ if(urlInput) {
     return fullURL.split("?")[0];
   } else {
 	let urlSplit = fullURL.split("?");
-	let questionMark = '';
 	let queryStringNew = [];
 	
 	if(fullURL.indexOf("?") > -1) {
-		let queryURL = urlSplit[1];
-		if(data.paramLowerCase) {
-			queryURL = queryURL.toLowerCase();
-		}
-		queryURL = queryURL.split("&");
+		let queryURL = data.paramLowerCase ? urlSplit[1].toLowerCase() : urlSplit[1] ;
+        queryURL = queryURL.split("&");
 		
 		const paramQuery = data.queryParamTable.map(x => x.queryParam);
 		for(var query of queryURL){
@@ -259,9 +255,7 @@ if(urlInput) {
 			}
 		}
 	}
-    if (queryStringNew != '') {
-      questionMark = '?';
-    }
+    const questionMark = queryStringNew != '' ? '?' : '';
 	switch (data.outputResult) {
 		case 'url':
 			return urlSplit[0]+questionMark+queryStringNew.join('&');
