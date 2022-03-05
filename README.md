@@ -23,6 +23,14 @@ As standard **page_location** is chosen, but you can use any Variable containing
 ### Lowercase Parameters
 Parameter matching is by default **Case Sensitive**. By ticking this box, all incoming parameters will be set to **lowercase**, making it easier to match parameters.
 
+### Redact Email Adresses
+Redact possible email adresses independent of the Parameter matching. Also Whitelisted parameters will be checked and redacted if an email is found.
+
+If an email is found, the email adress will be replaced with [EMAIL REDACTED].
+
+**Example:**
+ht<span>tps://domain.</span>com/?query=[EMAIL REDACTED]
+
 ### Whitelist or Exclude Query Parameters
 You can either **Whitelist** or **Exclude** Parameters.
 
