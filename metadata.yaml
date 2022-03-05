@@ -2,9 +2,11 @@ homepage: "https://github.com/gtm-templates-knowit-experience/"
 documentation: "https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings"
 versions:
   # Latest version
+  - sha: c65114c7e0667325179dfe31a9490624576de720
+    changeNotes: Added functionality for redacting email adresses.
+  # Older versions
   - sha: ebb976e66fbcc4d34c34ed3661d4fbc55a6dcf38
     changeNotes: Small code change. No changes in functionality.
-  # Older versions
   - sha: 47193d6f9b1025251d9eae933fd53297270edadc
     changeNotes: Added support for returning "Page URL without Parameters" (e.g. https://domain.com/path). Bug fix of question mark returned.
   - sha: 42fa3fa0bd6596f05a5ab9b7c68355f0eed13711
