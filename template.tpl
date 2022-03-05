@@ -96,6 +96,21 @@ ___TEMPLATE_PARAMETERS___
             "type": "NOT_EQUALS"
           }
         ]
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "redactEmail",
+        "checkboxText": "Redact Email Adresses",
+        "simpleValueType": true,
+        "help": "Redacts possible email adresses independent of the Parameter matching. \u003cbr/\u003e\u003cbr/\u003e\nAlso \u003cstrong\u003eWhitelisted parameteres\u003c/strong\u003e will be checked.\u003cbr/\u003e\u003cbr/\u003e If an email is found, the email adress will be replaced with \u003cstrong\u003e[EMAIL REDACTED]\u003c/strong\u003e.",
+        "alwaysInSummary": true,
+        "enablingConditions": [
+          {
+            "paramName": "outputResult",
+            "paramValue": "urlwoq",
+            "type": "NOT_EQUALS"
+          }
+        ]
       }
     ]
   },
@@ -235,20 +250,28 @@ if(urlInput) {
 	if(fullURL.indexOf("?") > -1) {
 		let queryURL = data.paramLowerCase ? urlSplit[1].toLowerCase() : urlSplit[1] ;
         queryURL = queryURL.split("&");
+        const redactText = data.paramRedactText;
+        const emailRegEx = '[aA-zZ0-9._]+@[aA-zZ0-9.-]+.[aA-zZ][&?]|[aA-zZ0-9._]+@[aA-zZ0-9.-]+.[aA-zZ]';
 		
 		const paramQuery = data.queryParamTable.map(x => x.queryParam);
 		for(var query of queryURL){
+          if(data.redactEmail) {
+            const emailMatch = query.match(emailRegEx);
+              if(emailMatch) {
+                query = query.replace(emailMatch,'[EMAIL REDACTED]');
+              }
+          }
 			if(data.paramInputChoice === "paramWhitelist"){
 				if(paramQuery.indexOf(query.split("=")[0]) > -1){
 					queryStringNew.push(query);
 				} else if(data.removeRedactChoice === "paramRedact"){
-					queryStringNew.push(query.split("=")[0] + "=" + data.paramRedactText);
+					queryStringNew.push(query.split("=")[0] + "=" + redactText);
 				}
 			} else if(data.paramInputChoice === "paramExclude"){
 				if(paramQuery.indexOf(query.split("=")[0]) === -1){
 					queryStringNew.push(query);
 				} else if(data.removeRedactChoice === "paramRedact"){
-					queryStringNew.push(query.split("=")[0] + "=" + data.paramRedactText);
+					queryStringNew.push(query.split("=")[0] + "=" + redactText);
 				}
 			} else {
 				queryStringNew(urlSplit[1]);
