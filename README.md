@@ -44,7 +44,8 @@ Choosing **Redact** means that the parameter will be kept, but the value will be
 Example: **query=[REDACTED]**.
 
 ### Add Query Parameters for Whitelisting/Exclusion
-Add the parameters to the table that you want to Whitelist/Exclude.
+You can add parameters using a **table** or a **text field**. 
+Add the parameters to the table/texxt field that you want to Whitelist/Exclude.
 
 ## Example Setups
 ### Example Setup for Google Analytics 4 (GA4)
@@ -80,6 +81,6 @@ Using this setup we get "clean" URLs and referrals, while we at the same time ca
 # Images of the Variable Template
 Variable Template (Server) for Google Tag Manager that Exclude or Whitelist Query String Parameters.
 
-![Exclude and Redact Query Parameters](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/sgtm-exclude-redact-query-string.png)
+![Exclude and Remove Query Parameters](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/sgtm-exclude-remove-query-string.png)
 
-![Whitelist (include) Query Parameters](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/sgtm-whitelist-remove-query-string.png)
+![Whitelist (include) Query Parameters](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/sgtm-whitelist-redact-query-string.png)
