@@ -197,9 +197,26 @@ ___TEMPLATE_PARAMETERS___
         ]
       },
       {
+        "type": "SELECT",
+        "name": "inputMethod",
+        "displayName": "Select Add Parameter Input",
+        "macrosInSelect": false,
+        "selectItems": [
+          {
+            "value": "table",
+            "displayValue": "Add Parameters to Table"
+          },
+          {
+            "value": "textfield",
+            "displayValue": "Add Parameters to Text Field"
+          }
+        ],
+        "simpleValueType": true
+      },
+      {
         "type": "SIMPLE_TABLE",
         "name": "queryParamTable",
-        "displayName": "",
+        "displayName": "Parameter Table",
         "simpleTableColumns": [
           {
             "defaultValue": "",
@@ -218,7 +235,36 @@ ___TEMPLATE_PARAMETERS___
           {
             "type": "NON_EMPTY"
           }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "inputMethod",
+            "paramValue": "textfield",
+            "type": "NOT_EQUALS"
+          }
         ]
+      },
+      {
+        "type": "TEXT",
+        "name": "queryParamText",
+        "displayName": "Parameter Text Field",
+        "simpleValueType": true,
+        "valueValidators": [
+          {
+            "type": "NON_EMPTY"
+          }
+        ],
+        "textAsList": true,
+        "help": "Add \u003cstrong\u003eone\u003c/strong\u003e parameter per line.",
+        "enablingConditions": [
+          {
+            "paramName": "inputMethod",
+            "paramValue": "textfield",
+            "type": "EQUALS"
+          }
+        ],
+        "alwaysInSummary": true,
+        "lineCount": 10
       }
     ],
     "enablingConditions": [
@@ -253,7 +299,7 @@ if(urlInput) {
         const redactText = data.paramRedactText;
         const emailRegEx = '[aA-zZ0-9._]+@[aA-zZ0-9.-]+.[aA-zZ][&?]|[aA-zZ0-9._]+@[aA-zZ0-9.-]+.[aA-zZ]';
 		
-		const paramQuery = data.queryParamTable.map(x => x.queryParam);
+		const paramQuery = data.queryParamText ? data.queryParamText.map(x => x) : data.queryParamTable.map(x => x.queryParam);
 		for(var query of queryURL){
           if(data.redactEmail) {
             const emailMatch = query.match(emailRegEx);
