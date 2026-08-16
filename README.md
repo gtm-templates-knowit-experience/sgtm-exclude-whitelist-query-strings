@@ -1,86 +1,108 @@
-# Exclude or Whitelist Query String Parameters  - SGTM Variable
-The probably most common cause for **Personally Identifiable Information (PII)** leaking into analytics tools is through the URL of the website.
-This **Variable Template** for **Google Tag Manager Server-Side (SGTM)** fixes this problem by making it possible to **Exclude** or **Whitelist** Query String Parameters from the URL.
+# Exclude or Allowlist (Whitelist) Query String Parameters - SGTM Variable
 
-Images of the Template is at the bottom.
+The most common cause for **Personally Identifiable Information (PII)** leaking into analytics tools is through the URL of the website. 
+
+This **Variable Template** for **Google Tag Manager Server-Side (SGTM)** fixes this problem by making it possible to safely **Exclude** or **Allowlist (Whitelist)** Query String Parameters from URLs before sending them to your marketing or analytics platforms. 
+
+Images of the Template are at the bottom.
 
 This Template is available in the [**Google Tag Manager Template Gallery**](https://tagmanager.google.com/gallery/#/owners/gtm-templates-knowit-experience/templates/sgtm-exclude-whitelist-query-strings).
 
 ## Variable Settings
-### Page URL
-As standard **page_location** is chosen, but you can use any Variable containing a valid URL as input.
+
+### Select URL Source
+You can easily select common Event Data variables from the dropdown list, or use a custom variable.
+*   **Event Data: page_location (Default)**
+*   **Event Data: page_referrer**
+*   **Event Data: link_url**
+*   **Custom Variable Input** (Allows you to use any Variable containing a valid URL as input).
 
 ### Output Result
 
-| Setting  | Example Output |
+| Setting | Example Output |
 | ------------- | ------------- |
-| Page URL with Parameters | ht<span>tps://domain</span>.com/path?query=something  |
-| Page URL without Parameters | ht<span>tps://domain</span>.com/path  |
-| Page Path with Parameters  | /path?query=something  |
-| Parameters with Question Mark  | ?query=something  |
-| Parameters without Question Mark  | query=something  |
+| URL Source with Parameters | `https://domain.com/path?query=something` |
+| URL Source without Parameters | `https://domain.com/path` |
+| Source Path with Parameters | `/path?query=something#target` |
+| Parameters with Question Mark | `?query=something` |
+| Parameters without Question Mark | `query=something` |
 
-### Lowercase Parameters
-Parameter matching is by default **Case Sensitive**. By ticking this box, all incoming parameters will be set to **lowercase**, making it easier to match parameters.
+*Note: The variable safely preserves URL hash fragments (e.g., `#target`) when reconstructing the URL.*
 
-### Redact Email Adresses
-Redact possible email adresses independent of the Parameter matching. Also Whitelisted parameters will be checked and redacted if an email is found.
+### Redact Email Addresses
+Redact potential email addresses independently of the parameter matching logic. Even Allowlisted (Whitelisted) parameters will be checked and redacted if an email format is detected.
 
-If an email is found, the email adress will be replaced with [EMAIL REDACTED].
+If an email is found, the email address will be replaced with `[EMAIL REDACTED]`.
+
+### Force Lowercase on Parameters
+Parameter matching is by default case-sensitive. By enabling this, incoming parameters can be converted to lowercase to help standardize your analytics data (for example, converting `FACEBOOK` to `facebook`).
+
+#### Lowercase Specific Parameters (Recommended):
+Instead of lowercasing everything, we highly recommend providing a specific list of parameters to target (such as `utm_source`, `utm_medium`, or `utm_campaign`). Lowercasing all parameters is dangerous because it will break case-sensitive unique identifiers, click IDs (like `fbclid`, `gclid`, `wbraid`), and authentication tokens.
+
+#### Lowercase Scope:
+You can choose to safely lowercase just the parameter values (leaving the names exactly as they entered), or lowercase both the parameter names and values.
 
 **Example:**
-ht<span>tps://domain.</span>com/?query=[EMAIL REDACTED]
+`https://domain.com/?query=[EMAIL REDACTED]`
 
-### Whitelist or Exclude Query Parameters
-You can either **Whitelist** or **Exclude** Parameters.
+### Allowlist (Whitelist) or Exclude Query Parameters
+You can either **Allowlist (Whitelist)** or **Exclude** parameters using a table or a text field.
 
-**Whitelist** means only parameters listed are allowed to pass through. This is the safest option for not allowing PII parameters leaking into your analytics and marketing tools. If you choose this option, it's important that you **add all parameters that you need**. That can be campaign tracking parameters and internal search parameters.
+*   **Allowlist (Whitelist):** Only parameters listed here are allowed to pass through. This is the **safest option** to prevent PII leakage into your analytics and marketing tools. If you choose this option, it is critical that you add *all* parameters you actually need (e.g., campaign tracking parameters, internal search queries, pagination).
+*   **Exclude:** Add specific parameters you **do not want to be passed through** to your analytics tool. This is less "safe" than using an Allowlist, but is a useful method if you only want to block known bad parameters.
 
-**Exclude** can also be used as a method for blocking PII parameters. It's less "safe" than using **Whitelist**, but are added as an option. With this method, add parameters you **don't want to be passed through** to your analytics tool.
+**Using the Table:**
+When using the table input for your parameters, you can use the **Description** column to document *why* a parameter is being kept or removed (e.g., "Facebook Click ID", "Internal Search Term"). This makes maintaining the variable much easier for your team over time.
 
 ### Remove or Redact Parameter Value
-If you choose **Remove**, you remove the parameter and the parameter value. 
-Choosing **Redact** means that the parameter will be kept, but the value will be redacted.
-Example: **query=[REDACTED]**.
+*   **Remove:** Removes the parameter and its value entirely from the URL.
+*   **Redact:** Keeps the parameter key in the URL, but overwrites the value with a custom redaction text. Example: `query=[REDACTED]`.
 
-### Add Query Parameters for Whitelisting/Exclusion
-You can add parameters using a **table** or a **text field**. 
-Add the parameters to the table/texxt field that you want to Whitelist/Exclude.
+---
 
-## Example Setups
-### Example Setup for Google Analytics 4 (GA4)
-In the GA4 example setup below, 1 extra GA4 parameter has been created (page_query_string). Settings below:
+## Example Setup: Using SGTM Transformations (Recommended)
 
-1. **page_location** with Page URL Parameters Whitelisted and other Parameters Removed.
-2. Query String without Question Mark, Whitelisted and other Parameters Redacted is sent to parameter **page_query_string**.
+The most efficient way to use this variable is by leveraging **Transformations** in Server-Side GTM. Transformations allow you to clean the data *before* it is processed by your tags, meaning you don't need to manually configure variables inside every individual GA4 or marketing tag.
 
-We overwrite **page_location** with the new URL where Parameters are Whitelisted and other Parameters removed. To **page_query_string** we send the Query String with the Whitelisted Parameters other Parameters as Redacted.
+### Step-by-Step Guide
 
-![Google Analytics 4 (GA4) example setup](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/ga4-overwriting-example.png)
+**1. Create your cleaning Variables:**
+*   Go to **Variables** and create a new variable using this template (e.g., name it `Page - page_location - Whitelist Parameters - Remove`).
+*   Set the **Select URL Source** to `Event Data: page_location`.
+*   Configure your Allowlist rules and redaction settings.
+*   *(Optional)* Repeat this process for `page_referrer` or `link_url` if needed.
 
-#### Example Output
-| Settings | Allowed parameters | page_location input | page_location output |
-| -------------| -------------| ------------- | ------------- |
-| Page URL with Parameters (removed) | query | ht<span>tps://domain</span>.com/path?query=something&secondparam=something-else | ht<span>tps://domain</span>.com/path?query=something  |
-| Parameters without Question Mark (redacted) | query | ht<span>tps://domain</span>.com/path?query=something&secondparam=something-else | query=something&secondparam=[REDACTED] |
+**2. Create a Transformation:**
+*   Navigate to the **Transformations** tab in your SGTM container.
+*   Click **New** and select **Augment Event** as the Transformation type.
+*   Under **Parameters to Add or Modify**, add a new row:
+    *   **Name:** `page_location`
+    *   **Value:** `{{Page - page_location - Whitelist Parameters - Remove}}` (the variable you created in Step 1).
+*   *(Optional)* Add rows to modify `page_referrer` or to create a custom audit parameter like `page_query_string` that captures redacted values.
 
-### Example Setup for Universal Analytics
-In the Universal Analytics example setup below, 3 different variables have been created:
-1. Page URL with Parameters Whitelisted and Removed
-2. Query String without Question Mark, Whitelisted and Redacted
-3. Referral with Parameters Whitelisted and Removed
+**3. Apply the Transformation:**
+*   In the **Matching Conditions** (Triggers) section of the Transformation, choose which events or tags this should apply to (e.g., apply it to all events, or specifically target your GA4 tags).
+*   Save and publish.
+       
+By doing this, any tag that uses the `page_location` event data will automatically receive the cleaned, PII-safe URL, ensuring data compliance seamlessly across all your platforms.
 
-We overwrite **page_location** with the new URL where parameters are Whitelisted and other Parameters removed. 
-To **Custom Dimension 1 (cd1)** we send the Query String with the Whitelisted Parameters and other Parameters as Redacted.
-We overwrite **page_referral** with the new Referral where parameters are Whitelisted and other Parameters removed.
 
-Using this setup we get "clean" URLs and referrals, while we at the same time can investigate what other parameters are in use.
+![SGTM Transformation Setup](images/sgtm-transformation.png)
 
-![Universal Analytics example setup](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/ua-overwriting-example.png)
+---
 
-# Images of the Variable Template
-Variable Template (Server) for Google Tag Manager that Exclude or Whitelist Query String Parameters.
+## Images of the Variable Template
+Variable Template (Server) for Google Tag Manager that Excludes or Allowlists Query String Parameters.
 
-![Exclude and Remove Query Parameters](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/sgtm-exclude-remove-query-string.png)
+### Whitelist (include) Query Parameters & Lowercase Parameter Values
 
-![Whitelist (include) Query Parameters](https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings/blob/main/images/sgtm-whitelist-redact-query-string.png)
+![Whitelist (include) Query Parameters](images/sgtm-whitelist-remove-query-string.png)
+
+### Exclude and Redact Query Parameters & Lowercase Parameter Values and Names
+
+![Exclude and Redact Query Parameters](images/sgtm-exclude-redact-query-string.png)
+
+### Remove All Query Parameters
+
+![Remove All Query Parameters](images/sgtm-remove-query-string.png)
