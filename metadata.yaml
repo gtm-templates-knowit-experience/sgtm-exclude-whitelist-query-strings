@@ -2,10 +2,11 @@ homepage: "https://github.com/gtm-templates-knowit-experience/"
 documentation: "https://github.com/gtm-templates-knowit-experience/sgtm-exclude-whitelist-query-strings"
 versions:
   # Latest version
+  - sha: 8a997b4c5f39f68c61454f314604864089d0bac2
+    changeNotes: Lowercase functionality improvements. Added "page_referrer" and "link_url" as URL Source options. Added parameter documentation option to table.
+  # Older versions
   - sha: b4f716b995275a51b84b41b5fed849002fd32c79
     changeNotes: Parameters can be added using either text field (new method) or table.
-  # Older versions
-  # Latest version
   - sha: c65114c7e0667325179dfe31a9490624576de720
     changeNotes: Added functionality for redacting email adresses.
   - sha: ebb976e66fbcc4d34c34ed3661d4fbc55a6dcf38
