@@ -43,9 +43,6 @@ Instead of lowercasing everything, we highly recommend providing a specific list
 #### Lowercase Scope:
 You can choose to safely lowercase just the parameter values (leaving the names exactly as they entered), or lowercase both the parameter names and values.
 
-**Example:**
-`https://domain.com/?query=[EMAIL REDACTED]`
-
 ### Allowlist (Whitelist) or Exclude Query Parameters
 You can either **Allowlist (Whitelist)** or **Exclude** parameters using a table or a text field.
 
