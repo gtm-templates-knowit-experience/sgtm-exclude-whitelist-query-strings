@@ -49,6 +49,7 @@ Parameter matching is by default case-sensitive. By enabling this, incoming para
 Instead of lowercasing everything, we highly recommend providing a specific list of parameters to target (such as `utm_source`, `utm_medium`, or `utm_campaign`). Lowercasing all parameters is dangerous because it will break case-sensitive unique identifiers, click IDs (like `fbclid`, `gclid`, `wbraid`), and authentication tokens.
 
 #### Lowercase Scope:
+
 You can choose to safely lowercase just the parameter *values* (leaving the names exactly as they entered), or lowercase both the parameter names and values.
 
 ### Allowlist (Whitelist) or Exclude Query Parameters
@@ -95,8 +96,6 @@ By doing this, any tag that uses the `page_location` event data will automatical
 
 ![SGTM Transformation Setup](images/sgtm-transformation.png)
 
----
-
 ## Images of the Variable Template
 Variable Template (Server) for Google Tag Manager that Excludes or Allowlists Query String Parameters.
 
@@ -104,7 +103,7 @@ Variable Template (Server) for Google Tag Manager that Excludes or Allowlists Qu
 
 ![Whitelist (include) Query Parameters](images/sgtm-whitelist-remove-query-string.png)
 
-
 ### Remove All Query Parameters
 
 ![Remove All Query Parameters](images/sgtm-remove-query-string.png)
+
