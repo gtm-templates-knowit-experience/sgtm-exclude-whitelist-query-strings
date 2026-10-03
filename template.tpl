@@ -14,7 +14,7 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "Exclude or Whitelist Query String Parameters",
-  "description": "Exclude or Whitelist Query String Parameters from page_location or any Variable with a valid URL-parameter. Parameters can be Removed or Redacted. Output can be with or without URL/Path.",
+  "description": "Exclude or Allowlist query string parameters to prevent PII leaks. Remove or redact values, restore stripped Click IDs, selectively lowercase, and output clean URLs or paths",
   "categories": [
     "UTILITY",
     "TAG_MANAGEMENT",
@@ -103,6 +103,20 @@ ___TEMPLATE_PARAMETERS___
           }
         ],
         "help": "Redacts possible email adresses independent of the Parameter matching if found in a parameter. \u003cbr/\u003e\u003cbr/\u003e Also \u003cstrong\u003eWhitelisted parameteres\u003c/strong\u003e will be checked.\u003cbr/\u003e\u003cbr/\u003e If an email is found, the email adress will be replaced with \u003cstrong\u003e[EMAIL REDACTED]\u003c/strong\u003e."
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "restoreClickIds",
+        "checkboxText": "Restore Click IDs from backup parameters",
+        "simpleValueType": true,
+        "help": "Browsers like Safari sometimes strip known click IDs like gclid. By passing a custom backup parameter from your ads, this tool can rename it back to the original parameter so your tracking tags function normally.",
+        "enablingConditions": [
+          {
+            "paramName": "outputResult",
+            "paramValue": "urlwoq",
+            "type": "NOT_EQUALS"
+          }
+        ]
       },
       {
         "type": "CHECKBOX",
@@ -412,6 +426,38 @@ ___TEMPLATE_PARAMETERS___
             "type": "EQUALS"
           }
         ]
+      },
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "clickIdRestoreTable",
+        "displayName": "Restore Click IDs from backup parameters",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Backup Parameter Name",
+            "name": "backupParam",
+            "type": "TEXT",
+            "valueHint": "backup_gclid",
+            "isUnique": false
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Original Parameter Name",
+            "name": "originalParam",
+            "type": "TEXT",
+            "valueHint": "gclid"
+          }
+        ],
+        "enablingConditions": [
+          {
+            "paramName": "restoreClickIds",
+            "paramValue": true,
+            "type": "EQUALS"
+          }
+        ],
+        "help": "Map your custom backup parameters (e.g., \u003ci\u003ebackup_gclid\u003c/i\u003e) to their original names (e.g., \u003ci\u003egclid\u003c/i\u003e).\n\u003cbr /\u003e\u003cbr /\u003e\n\u003cb\u003eNote:\u003c/b\u003e If you are using an Whitelist, you must whitelist the original parameter name.",
+        "newRowButtonText": "Add Click ID",
+        "valueValidators": []
       }
     ],
     "enablingConditions": [
@@ -431,186 +477,139 @@ const getEventData = require('getEventData');
 const parseUrl = require('parseUrl');
 const decodeUriComponent = require('decodeUriComponent');
 const encodeUriComponent = require('encodeUriComponent');
-const createRegex = require('createRegex'); 
-const makeString = require('makeString'); 
+const createRegex = require('createRegex');
+const makeString = require('makeString');
 
-// 1. URL Source Selection
-let urlString;
-if (data.urlInput === 'urlInputDefault' || data.urlInput === 'page_location') {
-  urlString = getEventData('page_location');
-} else if (data.urlInput === 'page_referrer') {
-  urlString = getEventData('page_referrer');
-} else if (data.urlInput === 'link_url') {
-  urlString = getEventData('link_url');
-} else {
-  urlString = data.urlInput; // Custom Variable Input
+// Helper 1: Read either list field and normalize entries
+function readList(text, table, lowercase) {
+  const items = text && text.length ? text : (table || []).map(row => row.queryParam);
+  return items
+    .filter(item => item !== undefined && item !== null)
+    .map(item => {
+      const value = makeString(item).trim();
+      return lowercase ? value.toLowerCase() : value;
+    })
+    .filter(item => item !== '');
 }
 
-if (!urlString) {
-  return undefined;
+// Helper 2: Handle standard + to space decoding
+function decodeForm(value) {
+  return decodeUriComponent(value.split('+').join(' '));
 }
 
-let urlInputParsed = parseUrl(urlString);
+let urlString = data.urlInput;
+if (urlString === 'urlInputDefault') urlString = 'page_location';
+if (['page_location', 'page_referrer', 'link_url'].indexOf(urlString) !== -1) {
+  urlString = getEventData(urlString);
+}
+if (!urlString) return undefined;
 
-if (urlInputParsed) {
-  let originalHref = urlInputParsed.href;
+const url = parseUrl(urlString);
+if (!url) return undefined;
+const base = url.href.split('#')[0].split('?')[0];
+const hash = url.hash || '';
+if (data.outputResult === 'urlwoq') return base + hash;
+
+const emailRegex = data.redactEmail ? createRegex('[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}') : null;
+if (data.redactEmail && emailRegex === null) return undefined;
+
+const filterList = readList(data.queryParamText, data.queryParamTable, false);
+const lowercaseAll = data.lowercaseIncludeChoice === 'includeAll';
+const lowercaseList = data.paramLowerCase && !lowercaseAll ? readList(data.lowercaseIncludeText, data.lowercaseIncludeTable, true) : [];
+
+// Pre-normalize and lowercase the backup parameters once during setup
+const restoreTable = data.restoreClickIds && data.clickIdRestoreTable ? data.clickIdRestoreTable.map(row => ({
+  backupParam: row.backupParam ? makeString(row.backupParam).trim().toLowerCase() : '',
+  originalParam: row.originalParam ? makeString(row.originalParam).trim() : ''
+})) : [];
+
+// Safely handle numeric 0, false, or null as redaction text
+const redactText = data.paramRedactText !== undefined && data.paramRedactText !== null ? makeString(data.paramRedactText) : '';
+
+// Decode everything before processing, so later originals retain priority.
+const search = url.search || '';
+const entries = (search.indexOf('?') === 0 ? search.substring(1) : search).split('&');
+const params = [];
+for (let i = 0; i < entries.length; i++) {
+  const entry = entries[i];
+  if (!entry) continue;
+  const at = entry.indexOf('=');
+  const key = at === 0 ? '' : decodeForm(at < 0 ? entry : entry.substring(0, at));
+  const value = at < 0 ? undefined : decodeForm(entry.substring(at + 1));
+  if (key === undefined || (at >= 0 && value === undefined)) return undefined;
+  params.push({ key: key, value: value });
+}
+
+const existingKeys = params.map(param => param.key);
+const existingKeysLower = params.map(param => param.key.toLowerCase());
+const restoredTargets = [];
+const output = [];
+
+for (let i = 0; i < params.length; i++) {
+  let key = params[i].key;
+  let value = params[i].value;
+  let dropBackup = false;
   
-  // 2. Extract Hash Fragment
-  let hashIndex = originalHref.indexOf('#');
-  let urlWithoutHash = originalHref;
-  let hashString = "";
-  
-  if (hashIndex > -1) {
-    urlWithoutHash = originalHref.substring(0, hashIndex);
-    hashString = originalHref.substring(hashIndex); 
+  // Calculate lowercase key once per parameter
+  const lowerKey = key.toLowerCase();
+
+  for (let j = 0; j < restoreTable.length; j++) {
+    const row = restoreTable[j];
+    
+    // Case-insensitive match for the backup parameter
+    if (!row.backupParam || lowerKey !== row.backupParam) continue;
+    
+    let targetExists = false;
+    
+    // Check case-insensitively only if the target name is configured to be lowercased
+    if (data.paramLowerCase && data.lowercaseScope === 'valuesAndNames' && (lowercaseAll || lowercaseList.indexOf(row.originalParam.toLowerCase()) !== -1)) {
+      targetExists = existingKeysLower.indexOf(row.originalParam.toLowerCase()) !== -1;
+    } else {
+      targetExists = existingKeys.indexOf(row.originalParam) !== -1;
+    }
+
+    // Restore if valid and missing, otherwise destroy it.
+    if (value !== undefined && value !== '' && !targetExists && restoredTargets.indexOf(row.originalParam) === -1) {
+      key = row.originalParam;
+      restoredTargets.push(key);
+    } else {
+      dropBackup = true; 
+    }
+    break;
+  }
+
+  // If it was an unused backup, drop it completely
+  if (dropBackup) continue;
+
+  // Strict Filter Check
+  const listed = filterList.indexOf(key) !== -1;
+  const filtered = data.paramInputChoice === 'paramWhitelist' ? !listed : data.paramInputChoice === 'paramExclude' ? listed : false;
+  if (filtered && data.removeRedactChoice !== 'paramRedact') continue;
+
+  if (data.paramLowerCase && (lowercaseAll || lowercaseList.indexOf(lowerKey) !== -1)) {
+    if (data.lowercaseScope === 'valuesAndNames') key = lowerKey;
+    if (value !== undefined) value = value.toLowerCase();
   }
   
-  // Compile Regex using sGTM API
-  const emailRegex = createRegex('[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}', 'gi');
-
-  if (data.outputResult === 'urlwoq') {
-    return urlWithoutHash.split("?")[0] + hashString;
-  } else {
-    let urlSplit = urlWithoutHash.split("?");
-    let queryStringNew = [];
-    
-    if (urlSplit.length > 1 && urlSplit[1] !== "") {
-      let queryURL = urlSplit.slice(1).join("?").split("&");
-      const redactText = data.paramRedactText || '';
-      
-      // Whitelist/Exclude Config Setup (Preserves exact case for strict matching)
-      let paramQuery = [];
-      if (data.queryParamText && data.queryParamText.length > 0) {
-        paramQuery = data.queryParamText.slice();
-      } else if (data.queryParamTable && data.queryParamTable.length > 0) {
-        paramQuery = data.queryParamTable.map(x => x.queryParam);
-      }
-      
-      paramQuery = paramQuery
-        .filter(item => item !== undefined)
-        .map(item => makeString(item).trim())
-        .filter(item => item !== '');
-
-      // Single Lowercase Allowlist Setup
-      let lowercaseIncludeList = [];
-      let lowercaseAll = data.lowercaseIncludeChoice === 'includeAll';
-
-      if (data.paramLowerCase && !lowercaseAll) {
-        if (data.lowercaseIncludeText && data.lowercaseIncludeText.length > 0) {
-          lowercaseIncludeList = data.lowercaseIncludeText.slice();
-        } else if (data.lowercaseIncludeTable && data.lowercaseIncludeTable.length > 0) {
-          lowercaseIncludeList = data.lowercaseIncludeTable.map(x => x.queryParam);
-        }
-        
-        // Lowercased in the background for safe matching
-        lowercaseIncludeList = lowercaseIncludeList
-          .filter(item => item !== undefined)
-          .map(item => makeString(item).trim().toLowerCase()) 
-          .filter(item => item !== '');
-      }
-
-      for (let query of queryURL) {
-        if (!query) continue; 
-
-        let parts = query.split("=");
-        let rawKey = parts[0];
-        let hasValue = parts.length > 1;
-        let rawValue = hasValue ? parts.slice(1).join("=") : undefined; 
-        
-        let decodedKey = rawKey === '' ? '' : decodeUriComponent(rawKey);
-        let decodedValue = hasValue ? decodeUriComponent(rawValue) : undefined;
-        
-        // Fail closed on malformed parameters
-        if (decodedKey === undefined || (hasValue && decodedValue === undefined)) {
-          continue; 
-        }
-
-        const lowerDecodedKey = decodedKey.toLowerCase();
-
-        // 1. Core URL Filtering logic (Strict exact match to the whitelist, e.g., "ScCid")
-        const isListed = paramQuery.indexOf(decodedKey) > -1;
-        
-        // 2. Determine if this parameter should be lowercased
-        let applyLowercase = false;
-        if (data.paramLowerCase) {
-          if (lowercaseAll || lowercaseIncludeList.indexOf(lowerDecodedKey) > -1) {
-            applyLowercase = true;
-          }
-        }
-
-        let outputKey = decodedKey;
-        let outputValue = decodedValue;
-        
-        // 3. Apply the chosen Lowercase Scope
-        if (applyLowercase) {
-          // If the user chose to lowercase BOTH values and names
-          if (data.lowercaseScope === 'valuesAndNames') {
-            outputKey = outputKey.toLowerCase();
-          }
-          // Values are always lowercased if the parameter is targeted
-          if (outputValue !== undefined) {
-            outputValue = outputValue.toLowerCase();
-          }
-        }
-
-        // Apply Email Redaction
-        if (data.redactEmail && outputValue !== undefined && emailRegex !== null) {
-          outputValue = outputValue.replace(emailRegex, '[EMAIL REDACTED]');
-        }
-
-        // Whitelist / Exclude Action Logic
-        let keepParam = true;
-        let redactParam = false;
-
-        if (data.paramInputChoice === "paramWhitelist") {
-          if (!isListed) {
-            if (data.removeRedactChoice === "paramRedact") redactParam = true;
-            else keepParam = false;
-          }
-        } else if (data.paramInputChoice === "paramExclude") {
-          if (isListed) {
-            if (data.removeRedactChoice === "paramRedact") redactParam = true;
-            else keepParam = false;
-          }
-        }
-
-        if (!keepParam) {
-          continue;
-        }
-
-        if (redactParam) {
-          queryStringNew.push(encodeUriComponent(outputKey) + "=" + encodeUriComponent(redactText));
-          continue;
-        }
-
-        // Optimization: Preserve the raw parameter if no transformations occurred
-        const isChanged = (outputKey !== decodedKey) || (outputValue !== decodedValue);
-
-        if (!isChanged) {
-          queryStringNew.push(query); 
-        } else {
-          let encodedKey = encodeUriComponent(outputKey);
-          let encodedValue = outputValue !== undefined ? encodeUriComponent(outputValue) : undefined;
-          queryStringNew.push(hasValue ? encodedKey + "=" + encodedValue : encodedKey);
-        }
-      }
-    }
-    
-    const questionMark = queryStringNew.length > 0 ? '?' : '';
-    
-    // 3. Re-append the parts
-    switch (data.outputResult) {
-      case 'url':
-        return urlSplit[0] + questionMark + queryStringNew.join('&') + hashString;
-      case 'path':
-        return urlInputParsed.pathname + questionMark + queryStringNew.join('&') + hashString;
-      case 'paramq':
-        return questionMark + queryStringNew.join('&'); 
-      case 'param':
-        return queryStringNew.join('&'); 
-    }
+  if (filtered) {
+    value = redactText;
+  } else if (emailRegex && value !== undefined && value.match(emailRegex)) {
+    value = '[EMAIL REDACTED]';
   }
+
+  output.push(encodeUriComponent(key) + (value === undefined ? '' : '=' + encodeUriComponent(value)));
 }
+
+const query = output.join('&');
+const queryWithMark = output.length ? '?' + query : '';
+
+switch (data.outputResult) {
+  case 'url': return base + queryWithMark + hash;
+  case 'path': return (url.pathname || '/') + queryWithMark + hash;
+  case 'paramq': return queryWithMark;
+  case 'param': return query;
+}
+return undefined;
 
 
 ___SERVER_PERMISSIONS___

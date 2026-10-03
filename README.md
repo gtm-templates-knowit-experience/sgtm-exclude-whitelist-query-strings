@@ -34,6 +34,14 @@ Redact potential email addresses independently of the parameter matching logic. 
 
 If an email is found, the email address will be replaced with `[EMAIL REDACTED]`.
 
+**Example:**
+`https://domain.com/?query=[EMAIL REDACTED]`
+
+### Smart Click ID Mapping and Restoration (Backup Parameters)
+If you pass custom or backup parameters from your ad platforms for attribution routing (e.g., passing a custom `backup_gclid`), this template can safely map them back to standard parameter names server-side.
+*   **Pre-scan logic:** The template checks if the standard parameter (e.g., `gclid`) is already present in the URL. If it is, the backup is ignored and deleted to prevent duplicates. If the standard parameter is missing, the template safely renames the backup to restore it.
+*   **Important:** If you are using the Allowlist setting below, you only need to allowlist the *original* parameter (e.g., `gclid`). The template handles the restoration before the Allowlist logic is applied. Unused backups are automatically removed.
+
 ### Force Lowercase on Parameters
 Parameter matching is by default case-sensitive. By enabling this, incoming parameters can be converted to lowercase to help standardize your analytics data (for example, converting `FACEBOOK` to `facebook`).
 
@@ -41,10 +49,7 @@ Parameter matching is by default case-sensitive. By enabling this, incoming para
 Instead of lowercasing everything, we highly recommend providing a specific list of parameters to target (such as `utm_source`, `utm_medium`, or `utm_campaign`). Lowercasing all parameters is dangerous because it will break case-sensitive unique identifiers, click IDs (like `fbclid`, `gclid`, `wbraid`), and authentication tokens.
 
 #### Lowercase Scope:
-You can choose to safely lowercase just the parameter values (leaving the names exactly as they entered), or lowercase both the parameter names and values.
-
-**Example:**
-`https://domain.com/?query=[EMAIL REDACTED]`
+You can choose to safely lowercase just the parameter *values* (leaving the names exactly as they entered), or lowercase both the parameter names and values.
 
 ### Allowlist (Whitelist) or Exclude Query Parameters
 You can either **Allowlist (Whitelist)** or **Exclude** parameters using a table or a text field.
@@ -84,7 +89,7 @@ The most efficient way to use this variable is by leveraging **Transformations**
 **3. Apply the Transformation:**
 *   In the **Matching Conditions** (Triggers) section of the Transformation, choose which events or tags this should apply to (e.g., apply it to all events, or specifically target your GA4 tags).
 *   Save and publish.
-       
+        
 By doing this, any tag that uses the `page_location` event data will automatically receive the cleaned, PII-safe URL, ensuring data compliance seamlessly across all your platforms.
 
 
@@ -99,9 +104,6 @@ Variable Template (Server) for Google Tag Manager that Excludes or Allowlists Qu
 
 ![Whitelist (include) Query Parameters](images/sgtm-whitelist-remove-query-string.png)
 
-### Exclude and Redact Query Parameters & Lowercase Parameter Values and Names
-
-![Exclude and Redact Query Parameters](images/sgtm-exclude-redact-query-string.png)
 
 ### Remove All Query Parameters
 
